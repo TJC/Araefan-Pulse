@@ -2,12 +2,13 @@
 #include <SI114.h>
 
 /*
-For Arduino users, use the SDA and SCL pins on your controller.
+For Arduino users, use the SDA and SCL pins on your controller. (A4 and A5 on Nano)
 For Teensy 3.x/LC users, likewise.
 Typically pin 18 is SCL, and 19 is SDA.
 
-The original docs here said to use 10k resisters in series. (Why?)
-I note that you should additionally have 5k pull-up resistors going to a 3V3 source.
+The original docs here said to use 10k resisters in series, but that seems confused.
+I note that you definitely need 5k pull-up resistors going to a 3V3 source. These
+are on the SDA and SCL lines.
 
 */
 
@@ -38,13 +39,13 @@ void logmsg(char *msg) {
 void setup() {
   #ifdef SERIAL_OUTPUT
   Serial.begin(57600);
-  #endif
 
   // kill time to wait for Serial monitor to open.
   for (int i = 0; i < 3; i++) {
     logmsg("Pulse monitor");
     delay(1000);
   }
+  #endif
   
   if (pulse.isPresent()) {
     logmsg("SI114x Pulse Sensor found");
