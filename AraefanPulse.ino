@@ -26,7 +26,7 @@ unsigned long red;        // read value from visible red LED
 unsigned long IR1;        // read value from infrared LED1
 unsigned long IR2;       // read value from infrared LED2
 unsigned long IR_total;     // IR LED reads added together
-
+unsigned long led_tick = 0;
 
 PulsePlug pulse;
 
@@ -36,17 +36,38 @@ void logmsg(char *msg) {
   #endif
 }
 
+void blink() {
+  digitalWrite(13, HIGH);
+  delay(500);
+  digitalWrite(13, LOW);
+  delay(500);
+}
+
+inline void led_beat_on() {
+  digitalWrite(13, HIGH);
+  led_tick = millis() + 250; // this is setting the time when the LED should turn off again
+}
+
+inline void led_beat_timeout() {
+  if (led_tick > 0 && led_tick <= millis()) {
+    digitalWrite(13, LOW);
+    led_tick = 0;
+  }
+}
+
 void setup() {
+  pinMode(13, OUTPUT); // for blinking LED on-board
+
   #ifdef SERIAL_OUTPUT
   Serial.begin(57600);
+  #endif
 
   // kill time to wait for Serial monitor to open.
   for (int i = 0; i < 3; i++) {
     logmsg("Pulse monitor");
-    delay(1000);
+    blink();
   }
-  #endif
-  
+
   if (pulse.isPresent()) {
     logmsg("SI114x Pulse Sensor found");
     #ifdef SERIAL_OUTPUT
@@ -66,6 +87,7 @@ void setup() {
 
 
 void loop() {
+  led_beat_timeout();
   readPulseSensor();
 }
 
@@ -235,6 +257,7 @@ void readPulseSensor() {
       Serial.println(((float)red_baseline / (float)(IR_baseline / 2)), 3);
       */
       usbMIDI.sendNoteOn(60, 99, 1);
+      led_beat_on();
     }
 
   }
